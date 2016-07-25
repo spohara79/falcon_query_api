@@ -3,19 +3,6 @@ import os
 from datetime import tzinfo, timedelta, datetime
 import time as _time
 
-#'''
-import logging
-import httplib as http_client
-http_client.HTTPConnection.debuglevel = 1
-
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
-requests_log = logging.getLogger("requests.package.urllib3")
-requests_log.setLevel(logging.DEBUG)
-requests_log.propagate = True
-#'''
-
-
 # from https://docs.python.org/3/library/datetimehtml#datetime.tzinfo examples
 # d = datetime.now(LocalTimeZone())
 # d.isoformat('T')
@@ -50,7 +37,7 @@ class LocalTimeZone(tzinfo):
 class FalconQueryAPI(object):
 
     '''
-        half-assed api wrapper
+        falconhost query api wrapper
         IOC Types
             sha256: A hex-encoded sha256 hash string. Length - min: 64, max: 64.
             sha1: A hex-encoded sha1 hash string. Length - min 40, max: 40.
@@ -60,7 +47,7 @@ class FalconQueryAPI(object):
             ipv6: An IPv6 address. Must be a valid IP address.
     '''
 
-    def __init__(self, username, api_key, host="falconapi.crowdstrike.com", proxy_url=None, verify='/opt/cs/fh_root.pem'):
+    def __init__(self, username, api_key, host="falconapi.crowdstrike.com", proxy_url=None, verify='fh_root.pem'):
         self.username = username
         self.api_key = api_key
         self.auth = (self.api_key, self.username)
@@ -130,7 +117,6 @@ class FalconQueryAPI(object):
     def upload_iocs(self, iocs, retries=0):
         d = datetime.now(LocalTimeZone())
         dstamp = d.isoformat('T')
-        print "Total IOCs:", len(iocs)
         resources = []
         for json_iocs in self.__chunk__(iocs, 200):
             print "Chunk Len:", len(json_iocs)

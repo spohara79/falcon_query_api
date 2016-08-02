@@ -1,3 +1,9 @@
+""" falcon_query_api.py - API Wrapper for Falcon Host Query """
+
+__author__ = "Sean O'Hara"
+__email__ = "spohara@gmail.com"
+__version__ = "0.0.2"
+
 import requests
 import os
 from datetime import tzinfo, timedelta, datetime
@@ -119,7 +125,6 @@ class FalconQueryAPI(object):
         dstamp = d.isoformat('T')
         resources = []
         for json_iocs in self.__chunk__(iocs, 200):
-            print "Chunk Len:", len(json_iocs)
             for x,_ in enumerate(json_iocs):
                 json_iocs[x]['share_level'] = 'red'
                 json_iocs[x]['policy'] = 'detect'

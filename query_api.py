@@ -165,7 +165,7 @@ class FalconQueryAPI(object):
             elif resp.status_code == 429:
                 if not retries:
                     time.sleep(resp.headers['retry-after'])
-                    return self.upload_iocs(ids, retries=1)
+                    return self.update_iocs(ids, expiration_days, source, description, retries=1)
             else:
                 resp.raise_for_status()
         return resources
@@ -247,7 +247,7 @@ class FalconQueryAPI(object):
         elif resp.status_code == 429:
             if not retries:
                 time.sleep(resp.headers['retry-after'])
-                return self.get_devices(type_, value, retries=1)
+                return self.get_devices_ioc(type_, value, retries=1)
         else:
             resp.raise_for_status()
 
@@ -285,7 +285,7 @@ class FalconQueryAPI(object):
         elif resp.status_code == 429:
             if not retries:
                 time.sleep(resp.headers['retry-after'])
-                return self.get_devices(type_, value, retries=1)
+                return self.get_device_count(type_, value, retries=1)
         else:
             resp.raise_for_status()
 
@@ -297,7 +297,7 @@ class FalconQueryAPI(object):
         @param   device_id String       
         @returns           List(String) A list of client device_ids which the indicator was found.
     '''
-    def get_processes(self, type_, value, device_id):
+    def get_processes(self, type_, value, device_id, retries=0):
         params = {'type': type_, 'value': value, 'device_id': device_id}
         resp = requests.get(self.search_process, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
@@ -306,7 +306,7 @@ class FalconQueryAPI(object):
         elif resp.status_code == 429:
             if not retries:
                 time.sleep(resp.headers['retry-after'])
-                return self.get_devices(type_, value, retries=1)
+                return self.get_processes(type_, value, device_id, retries=1)
         else:
             resp.raise_for_status()
 

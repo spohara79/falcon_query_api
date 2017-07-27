@@ -165,7 +165,7 @@ class FalconQueryAPI(object):
             elif resp.status_code == 429:
                 if not retries:
                     time.sleep(resp.headers['retry-after'])
-                    return self.upload_iocs(iocs, retries=1)
+                    return self.upload_iocs(ids, retries=1)
             else:
                 resp.raise_for_status()
         return resources
@@ -239,15 +239,15 @@ class FalconQueryAPI(object):
         @param   value String       The string representation of the indicator.
         @returns       List(String) List device ids
     '''
-    def get_devices_ioc(self, type, value, retries=0):
-        params = {'type': type, 'value': value}
+    def get_devices_ioc(self, type_, value, retries=0):
+        params = {'type': type_, 'value': value}
         resp = requests.get(self.search_device, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
             return resp.json()['resources']
         elif resp.status_code == 429:
             if not retries:
                 time.sleep(resp.headers['retry-after'])
-                return self.get_devices(ids, retries=1)
+                return self.get_devices(type_, value, retries=1)
         else:
             resp.raise_for_status()
 
@@ -276,8 +276,8 @@ class FalconQueryAPI(object):
         @param   value String  The string representation of the indicator.
         @returns       Integer The count devices 
     '''
-    def get_device_count(self, type, value, retries=0):
-        params = {'type': type, 'value': value}
+    def get_device_count(self, type_, value, retries=0):
+        params = {'type': type_, 'value': value}
         resp = requests.get(self.count_device, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
             resources = resp.json()['resources']
@@ -285,7 +285,7 @@ class FalconQueryAPI(object):
         elif resp.status_code == 429:
             if not retries:
                 time.sleep(resp.headers['retry-after'])
-                return self.get_devices(ids, retries=1)
+                return self.get_devices(type_, value, retries=1)
         else:
             resp.raise_for_status()
 
@@ -297,8 +297,8 @@ class FalconQueryAPI(object):
         @param   device_id String       
         @returns           List(String) A list of client device_ids which the indicator was found.
     '''
-    def get_processes(self, type, value, device_id):
-        params = {'type': type, 'value': value, 'device_id': device_id}
+    def get_processes(self, type_, value, device_id):
+        params = {'type': type_, 'value': value, 'device_id': device_id}
         resp = requests.get(self.search_process, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
             #return [dict(zip(['device_id', 'md5'], [x.split(':')[2], x.split(':')[1]])) for x in resp.json()['resources']]
@@ -306,7 +306,7 @@ class FalconQueryAPI(object):
         elif resp.status_code == 429:
             if not retries:
                 time.sleep(resp.headers['retry-after'])
-                return self.get_devices(ids, retries=1)
+                return self.get_devices(type_, value, retries=1)
         else:
             resp.raise_for_status()
 

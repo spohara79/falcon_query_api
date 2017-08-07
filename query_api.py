@@ -79,14 +79,15 @@ class FalconQueryAPI(object):
         self.process_detail = '/'.join([self.base, 'processes', 'entities', 'processes', 'v1'])
         self.resolve_detect = '/'.join([self.base, 'detects', 'entities', 'detects', 'v1'])
 
-    '''
+    def get_iocs(self, ids, retries=0):
+        '''
         Return detail information on indicator(s)
 
         @param: ids List of dicts that hold type (see class comments above) and values (IOCS)
         e.g., [{'domain':'bad-domain.com'}]
         @returns list of dicts that describe the IOC(s)
-    '''
-    def get_iocs(self, ids, retries=0):
+        '''
+        
         params = {'ids': []}
         params['ids'].extend([":".join([k, v]) for x in ids for k,v in x.iteritems()])
         resp = requests.get(self.manage_indicators, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
@@ -99,7 +100,8 @@ class FalconQueryAPI(object):
         else:
             resp.raise_for_status()
 
-    '''
+    def upload_iocs(self, iocs, retries=0):
+        '''
         Upload a list of  indicators and metadata
 
         @param iocs is a list of dicts that contain the following:
@@ -119,8 +121,8 @@ class FalconQueryAPI(object):
             description     String     The friendly description of the indicator. Limit 200 characters.
          
             E.g., [{'type':'domain', 'value': 'bad-domain.com'}
-    '''
-    def upload_iocs(self, iocs, retries=0):
+        '''
+        
         d = datetime.now(LocalTimeZone())
         dstamp = d.isoformat('T')
         resources = []
@@ -139,15 +141,17 @@ class FalconQueryAPI(object):
             else:
                 resp.raise_for_status()
         return resources
-    '''
+
+    def update_iocs(self, ids, expiration_days=None, source=None, description=None, retries=0):
+        '''
         Update metadata of an indicator
 
         @param ids             List(Dict) list of dicts that contain 'type' and 'value' paris (see get_iocs/class notes)
         @param expiration_days Integer    number of days indicator is valid for (ip and domain)
         @param source          String     name of source where indicator originated
         @param description     String     description of indicator
-    '''
-    def update_iocs(self, ids, expiration_days=None, source=None, description=None, retries=0):
+        '''
+        
         resources = []
         for this_ids in self.__chunk__(ids, 100):
             params = {'ids': []}
@@ -170,12 +174,13 @@ class FalconQueryAPI(object):
                 resp.raise_for_status()
         return resources
             
-    '''
-    Delete a list of iocs
-
-    @params ids  List(Dict)  list of dicts that contain 'type' and 'value' pairs (see get_iocs/class notes)
-    '''
     def delete_iocs(self, ids, retries=0):
+        '''
+        Delete a list of iocs
+
+        @params ids  List(Dict)  list of dicts that contain 'type' and 'value' pairs (see get_iocs/class notes)
+        '''
+        
         resources = []
         for this_ids in self.__chunk__(ids, 100):
             params = {'ids': []}
@@ -191,7 +196,9 @@ class FalconQueryAPI(object):
                 resp.raise_for_status()
         return resources
 
-    '''
+    def search_iocs(self, types=None, values=None, sources=None, from_stamp=None,
+                    to_stamp=None, sort=None, limit=100, offset=0, retries=0):
+        '''
         Search IOCs by different types/values or metadata
 
         @param   types                     List(strings) A list of indicator types.
@@ -208,10 +215,8 @@ class FalconQueryAPI(object):
         @param   limit                     Integer       (default = 100) The maximum number of records to return.
         @param   offset                    Integer       (default = 0) The offset to begin the list from. i.
         @returns                           List(dict)    returns a list of dicts that are 'type' and 'value' pairs
-    '''
-    def search_iocs(
-        self, types=None, values=None, sources=None, from_stamp=None,
-        to_stamp=None, sort=None, limit=100, offset=0, retries=0):
+        '''
+        
         results = []
         while True:
             params = {
@@ -232,14 +237,15 @@ class FalconQueryAPI(object):
                 resp.raise_for_status()
         return results
 
-    '''
+    def get_devices_ioc(self, type_, value, retries=0):
+        '''
         Get device ids (end points) that have seen an indicator
 
         @param   type  String       The type of the indicator.
         @param   value String       The string representation of the indicator.
         @returns       List(String) List device ids
-    '''
-    def get_devices_ioc(self, type_, value, retries=0):
+        '''
+        
         params = {'type': type_, 'value': value}
         resp = requests.get(self.search_device, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
@@ -251,13 +257,14 @@ class FalconQueryAPI(object):
         else:
             resp.raise_for_status()
 
-    '''
+    def get_devices(self, ids, retries=0):
+        '''
         Get device details from device id(s)
 
         @param   ids List(string) list of strings that contain the uuid of the clients to get device details
         @returns     List(dict)   returns a list of dictionaries that contain device details
-    '''
-    def get_devices(self, ids, retries=0):
+        '''
+        
         params = {'ids': ids}
         resp = requests.get(self.manage_device, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
@@ -269,14 +276,15 @@ class FalconQueryAPI(object):
         else:
             resp.raise_for_status()
 
-    '''
+    def get_device_count(self, type_, value, retries=0):
+        '''
         Get number of end points that have seen an indicator
 
         @param   type  String  The type of the indicator.
         @param   value String  The string representation of the indicator.
         @returns       Integer The count devices 
-    '''
-    def get_device_count(self, type_, value, retries=0):
+        '''
+        
         params = {'type': type_, 'value': value}
         resp = requests.get(self.count_device, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
@@ -289,15 +297,16 @@ class FalconQueryAPI(object):
         else:
             resp.raise_for_status()
 
-    '''
+    def get_processes(self, type_, value, device_id, retries=0):
+        '''
         Get the process id from device_id that triggered an indicator
 
         @param   type      String       The type of the indicator.
         @param   value     String       The string representation of the indicator.
         @param   device_id String       
         @returns           List(String) A list of client device_ids which the indicator was found.
-    '''
-    def get_processes(self, type_, value, device_id, retries=0):
+        '''
+        
         params = {'type': type_, 'value': value, 'device_id': device_id}
         resp = requests.get(self.search_process, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
@@ -310,13 +319,14 @@ class FalconQueryAPI(object):
         else:
             resp.raise_for_status()
 
-    '''
+    def get_process_details(self, ids, retries=0):
+        '''
         Gets the process details given process id(s)
 
         @param   ids List(string) List of process ids to get details on
         @returns     List(dict)   List of dictionaries that detail the processes
-    '''
-    def get_process_details(self, ids, retries=0):
+        '''
+        
         params = {'ids': ids}
         resp = requests.get(self.process_detail, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
@@ -329,7 +339,8 @@ class FalconQueryAPI(object):
         else:
             resp.raise_for_status()
 
-    '''
+    def resolve_detection(self, ids, to_state, retries=0):
+        '''
         Set the detection state for specific detect id(s)
 
         @param  ids      List(string) List of detection ids to resolve
@@ -341,8 +352,7 @@ class FalconQueryAPI(object):
                 false_positive
                 ignored          
         @returns        List(dict)   List of dictionaries that detail the processes
-    '''
-    def resolve_detection(self, ids, to_state, retries=0):
+        '''
         params = {'ids': ids, 'to_state': to_state}
         resp = requests.patch(self.resolve_detect, proxies=self.proxies, verify=self.verify, params=params, auth=self.auth)
         if resp.status_code == requests.codes.ok:
